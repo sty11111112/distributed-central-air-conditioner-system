@@ -152,7 +152,7 @@ void SubMachine::set_RoomID(int id) {
 }
 int SubMachine::CloseMachine() {
 
-	islink = 0;
+	islink = 1;
 	set_main_working_mode(-1);
 	set_working_state(OFF);
 	set_current_temp(NULL);
@@ -272,11 +272,13 @@ void SubMachine::Start()
 			if (z - (it->second.time) > 2000) {
 				//重发次数达到5次，判断链接断开，5秒后进行重连
 				if (time_table[it->first].count >= 5) {
-					if (islink == 1)
-						islink = 0;
-					if (islink == 0)
+					if (islink == 1) 
+						islink = 0;//设置为重连状态
+						
+					if (islink == 0) {
 						r = clock();
-					islink --;
+						islink--;
+					}
 					if (z - r >= 5000) {
 						closesocket(sockfd);
 						//释放DLL资源
@@ -488,7 +490,7 @@ int SubMachine::islinked() {
 
 SubMachine::SubMachine()
 {
-	islink = 0;
+	islink = 1;
 	set_main_working_mode(-1);
 	set_working_state(OFF);
 	set_current_temp(NULL);

@@ -61,7 +61,7 @@ private:
 	double fee;
 	double energy;
 	int working_state;
-	bool main_working_mode;
+	int main_working_mode;
 	int islink;
 
 	//用来标识发出的请求

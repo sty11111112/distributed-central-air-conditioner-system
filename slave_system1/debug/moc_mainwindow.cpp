@@ -23,7 +23,7 @@ QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_MainWindow_t {
     QByteArrayData data[9];
-    char stringdata0[175];
+    char stringdata0[163];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -40,14 +40,14 @@ QT_MOC_LITERAL(4, 65, 25), // "on_highWindButton_clicked"
 QT_MOC_LITERAL(5, 91, 16), // "on_power_clicked"
 QT_MOC_LITERAL(6, 108, 23), // "on_increaseTemp_clicked"
 QT_MOC_LITERAL(7, 132, 23), // "on_decreaseTemp_clicked"
-QT_MOC_LITERAL(8, 156, 18) // "decreaseTargetTemp"
+QT_MOC_LITERAL(8, 156, 6) // "do_Sub"
 
     },
     "MainWindow\0on_lowWindButton_clicked\0"
     "\0on_middleWindButton_clicked\0"
     "on_highWindButton_clicked\0on_power_clicked\0"
     "on_increaseTemp_clicked\0on_decreaseTemp_clicked\0"
-    "decreaseTargetTemp"
+    "do_Sub"
 };
 #undef QT_MOC_LITERAL
 
@@ -97,7 +97,7 @@ void MainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
         case 3: _t->on_power_clicked(); break;
         case 4: _t->on_increaseTemp_clicked(); break;
         case 5: _t->on_decreaseTemp_clicked(); break;
-        case 6: _t->decreaseTargetTemp(); break;
+        case 6: _t->do_Sub(); break;
         default: ;
         }
     }

@@ -42,10 +42,11 @@ private:
     int windSpeed;//风速模式，0低风 1中风 2高风
     double usedFee;//支付金额
     double usedEnergy;//消耗能量
+	int flag;//断连信息是否输出
     void changeCurrentTempShow(int curentTemp);//同步当前温度显示
     void changeWindSpeed(int newWindSpeed);//风速设置
 	void updatefees(double fees);
-	void changeMode(bool inMode);
+	void changeMode(int inMode);
 	
 	QTimer *timer;
 

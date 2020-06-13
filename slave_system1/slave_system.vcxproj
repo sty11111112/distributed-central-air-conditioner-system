@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{53BD5EFB-1DD8-390F-BCF2-85A0CEFA3813}</ProjectGuid>
+    <ProjectGuid>{86EC999C-6DAA-3FC7-BB4A-B59CB7287FE0}</ProjectGuid>
     <RootNamespace>slave_system</RootNamespace>
     <Keyword>QtVS_v302</Keyword>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>

@@ -10,6 +10,7 @@ MainWindow::MainWindow(QWidget *parent)
 	ui->setupUi(this);
 	isOpen = false;
 	currentTemp = 25;
+	flag = 0;
 
 	QTimer *timer = new QTimer(this);
 	connect(timer, SIGNAL(timeout()), this, SLOT(do_Sub()));
@@ -203,25 +204,35 @@ void MainWindow::updatefees(double fees)
 	ui->energy->setText(QString::number(usedEnergy));
 }
 
-void MainWindow::changeMode(bool inMode)
+void MainWindow::changeMode(int inMode)
 {
-	mode = inMode;
-	if (mode == false)
+
+	if (inMode == -1){}
+
+	if (inMode == 0)
 	{
+		mode = 0;
 		ui->mode->setText("制冷");
 	}
-	else
+	if (inMode == 1)
 	{
+		mode = 1;
 		ui->mode->setText("供暖");
 	}
 }
 
 void MainWindow::do_Sub()
 {
-	w.Start();
-	changeCurrentTempShow(w.get_current_temp());
-	updatefees(w.get_fee());
-	changeMode(w.get_main_working_mode());
-	if(w.islinked() == -1)
-		QMessageBox::warning(this, "连接断开", "正在尝试重连");
+	if (w.get_working_state() == 1) {
+		w.Start();
+		changeCurrentTempShow(w.get_current_temp());
+		updatefees(w.get_fee());
+		changeMode(w.get_main_working_mode());
+		if (w.islinked() == -1 && flag == 0) {
+			QMessageBox::warning(this, "连接断开", "正在尝试重连");
+			flag = 1;
+		}
+		if (w.islinked() == 1)
+			flag = 0;
+	}
 }

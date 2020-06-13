@@ -16,6 +16,7 @@ int main(int argc, char *argv[])
     bool ok=false;
     int roomid;
     roomid=QInputDialog::getInt(0,"从控机操作系统","房间号",0,1,9,1,&ok);
+
     if(ok==false)
     {
         QMessageBox::warning(0,"错误","未指定房间号，无法正常开机！",QMessageBox::Ok);

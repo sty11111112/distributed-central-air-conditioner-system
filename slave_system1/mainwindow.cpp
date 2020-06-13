@@ -10,6 +10,7 @@ MainWindow::MainWindow(QWidget *parent)
 	ui->setupUi(this);
 	isOpen = false;
 	currentTemp = 25;
+	w.set_lastwind = 1;
 	flag = 0;
 
 	QTimer *timer = new QTimer(this);
@@ -32,6 +33,9 @@ void MainWindow::changeWindSpeed(int newWindSpeed)
     QString wind;
     windSpeed=newWindSpeed;
     switch (newWindSpeed) {
+	case -1:
+		wind = "-";
+		break;
     case 0:
         wind="低风";
 		w.changeWindSpeed(0);
@@ -228,6 +232,12 @@ void MainWindow::do_Sub()
 		changeCurrentTempShow(w.get_current_temp());
 		updatefees(w.get_fee());
 		changeMode(w.get_main_working_mode());
+		if (w.get_last_wind != NULL && w.get_current_wind == NULL) {
+			changeWindSpeed(-1);
+		}
+		if (windSpeed == -1 && w.get_last_wind == w.get_current_wind && w.get_current_wind != NULL) {
+			changeWindSpeed(w.get_current_wind());
+		}
 		if (w.islinked() == -1 && flag == 0) {
 			QMessageBox::warning(this, "连接断开", "正在尝试重连");
 			flag = 1;

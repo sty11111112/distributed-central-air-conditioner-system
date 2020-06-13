@@ -37,13 +37,14 @@ public:
 	int get_target_temp();
 	float get_current_temp();
 	int get_current_wind();
+	int get_last_wind();
 	float get_fee();
 	int get_working_state();
 	int get_main_working_mode();
 	void set_RoomID(int id);
+	void set_lastwind(int newspeed);
 	int CloseMachine();
 	int OpenMachine();
-	void IDcard(string ID_card);
 	int increaseTargetTemp();
 	int decreaseTargetTemp();
 	void changeWindSpeed(int newspeed);
@@ -70,6 +71,7 @@ private:
 	clock_t f;
 	clock_t b;
 	clock_t h;
+	clock_t r;
 	//用来标识调用温度指令的次数
 	int flag;
 	struct recv_String;
@@ -82,9 +84,9 @@ private:
 	void sendToServer(char * buffer, int buffer_size);
 	void set_room_num(int temp);
 	void set_target_temp(int temp);
-	void set_current_temp(float temp);
+	void set_current_temp(int temp);
 	void set_current_wind(int temp);
-	void set_fee(float temp);
+	void set_fee(double temp);
 	void set_working_state(int temp);
 	void set_main_working_mode(int temp);
 };

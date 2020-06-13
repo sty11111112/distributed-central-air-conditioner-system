@@ -74,12 +74,12 @@ void MainWindow::changePower(){
     {
         //判断通信是否成功
         //如果失败
-		//if (w.OpenMachine() == -1) {
-			//openFailed();
-		//}
-		//else {
+		if (w.OpenMachine() == -1) {
+			openFailed();
+		}
+		else {
 			openMachine(0);
-		//}
+		}
     }
     else
     {

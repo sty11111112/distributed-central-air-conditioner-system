@@ -28,18 +28,16 @@ int SubMachine::init_socket()
 		return -1;
 	}
 
+	unsigned long ul = 1;
 	sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+	int ret = ioctlsocket(sockfd, FIONBIO, (unsigned long *)&ul);//设置成非阻塞模式。
 
 	ser_addr.sin_family = AF_INET;
-	ser_addr.sin_port = htons(5555);
-	ser_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
-
-	if (connect(sockfd, (SOCKADDR *)&ser_addr, sizeof(SOCKADDR)) == SOCKET_ERROR) {
-		return -1;
-	}
-	else {
-		return 1;
-	}
+	//ser_addr.sin_port = htons(5555);
+	//ser_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+	ser_addr.sin_port = htons(53);
+	ser_addr.sin_addr.s_addr = INADDR_ANY;
+	return 1;
 }
 
 bool SubMachine::is_response(char * recv_buffer) {
@@ -73,7 +71,7 @@ void SubMachine::set_current_temp(int temp)
 void SubMachine::set_current_wind(int temp)
 {
 	current_wind = temp;
-	if (current_wind != NULL){
+	if (current_wind != -1){
 		
 		last_wind = current_wind;
 	}
@@ -137,7 +135,7 @@ int SubMachine::CloseMachine() {
 	set_working_state(OFF);
 	set_current_temp(NULL);
 	set_target_temp(NULL);
-	set_current_wind(NULL);
+	set_current_wind(-1);
 
 	clock_t z = clock();
 	//发送关机请求
@@ -168,8 +166,11 @@ int SubMachine::OpenMachine() {
 	islink = 1;
 	set_working_state(ON);
 	main_working_mode = COOL;
+	fee = 0;
+	flag = 0;
 	b = clock();
 	h = clock();
+	target_temp = 22;
 	clock_t z = clock();
 	//发送开机请求，中央空调返回模式和缺省温度
 	char send_buffer[512];
@@ -192,13 +193,15 @@ int SubMachine::OpenMachine() {
 
 
 int SubMachine::increaseTargetTemp() {
-	flag++;
+	target_temp++;
+	flag = 1;
 	f = clock();
 	return 1;
 }
 
 int SubMachine::decreaseTargetTemp() {
-	flag--;
+	target_temp--;
+	flag = 1;
 	f = clock();
 	return 1;
 }
@@ -242,7 +245,7 @@ void SubMachine::Start()
 
 	if (working_state == ON) {
 		//温度自然变化
-		if (current_wind = NULL) {
+		if (current_wind = -1) {
 			if (z - b >= 10000) {
 				if (main_working_mode == COOL)
 					current_temp = current_temp + 1;
@@ -283,8 +286,8 @@ void SubMachine::Start()
 		}
 	}
 	if (working_state == ON) {
-		for (it = time_table.begin(); it != time_table.begin(); it++) {
-			if (z - (it->second.time) > 2000) {
+		for (it = time_table.begin(); it != time_table.end(); it++) {
+			if (z - (it->second.time) >= 2000) {
 				//重发次数达到5次，判断链接断开，5秒后进行重连
 				if (time_table[it->first].count >= 5) {
 					if (islink == 1) 
@@ -323,7 +326,7 @@ void SubMachine::Start()
 		if (current_temp == target_temp) {
 			tem.recv_mode = 4;
 			tem.room_id = room_num;
-			tem.recv_wind = NULL;
+			tem.recv_wind = -1;
 			Ans_id++;
 			tem.ansid = Ans_id;
 			memset(send_buffer, 0, 512);
@@ -342,7 +345,7 @@ void SubMachine::Start()
 	if (working_state == ON) {
 		struct recv_String tem;
 		memset(&tem, 0, sizeof(tem));
-		if (abs(target_temp - current_temp) >= 1 && current_wind == NULL && last_wind != NULL) {
+		if (abs(target_temp - current_temp) >= 1 && current_wind == -1 && last_wind != -1) {
 			tem.recv_mode = 4;
 			tem.room_id = room_num;
 			tem.recv_wind = last_wind;
@@ -387,7 +390,7 @@ void SubMachine::Start()
 		Ans_id++;
 		req.ansid = Ans_id;
 		req.recv_mode = 3;
-		req.recv_temp = target_temp + flag;
+		req.recv_temp = target_temp;
 		flag = 0;
 		memset(send_buffer, 0, 512);
 		memcpy(send_buffer, &req, sizeof(req));
@@ -492,7 +495,7 @@ SubMachine::SubMachine()
 	set_working_state(OFF);
 	set_current_temp(NULL);
 	set_target_temp(NULL);
-	set_current_wind(NULL);
+	set_current_wind(-1);
 	closesocket(sockfd);
 	//释放DLL资源
 	WSACleanup();

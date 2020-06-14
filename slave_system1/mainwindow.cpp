@@ -16,7 +16,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 	QTimer *timer = new QTimer(this);
 	connect(timer, SIGNAL(timeout()), this, SLOT(do_Sub()));
-	timer->start(100);
+	timer->start(1000);
 }
 
 MainWindow::~MainWindow()
@@ -39,24 +39,12 @@ void MainWindow::changeWindSpeed(int newWindSpeed)
 		break;
     case 0:
         wind="低风";
-		if (w.get_current_wind() == NULL)
-			w.set_lastwind(0);
-		else
-			w.changeWindSpeed(0);
         break;
     case 1:
         wind="中风";
-		if (w.get_current_wind() == NULL)
-			w.set_lastwind(1);
-		else
-			w.changeWindSpeed(1);
         break;
     case 2:
         wind="高风";
-		if (w.get_current_wind() == NULL)
-			w.set_lastwind(2);
-		else
-			w.changeWindSpeed(2);
         break;
     default:
         QMessageBox::warning(0,"错误","风速设置出错",QMessageBox::Ok);
@@ -70,18 +58,30 @@ void MainWindow::changeWindSpeed(int newWindSpeed)
 
 void MainWindow::on_lowWindButton_clicked()
 {
-    changeWindSpeed(0);
+    //changeWindSpeed(0);
+	if (w.get_current_wind() == -1)
+		w.set_lastwind(0);
+	else
+		w.changeWindSpeed(0);
 }
 
 void MainWindow::on_middleWindButton_clicked()
 {
-    changeWindSpeed(1);
+	if (w.get_current_wind() == -1)
+		w.set_lastwind(1);
+	else
+		w.changeWindSpeed(1);
+    //changeWindSpeed(1);
 }
 
 
 void MainWindow::on_highWindButton_clicked()
 {
-    changeWindSpeed(2);
+    //changeWindSpeed(2);
+	if (w.get_current_wind() == -1)
+		w.set_lastwind(2);
+	else
+		w.changeWindSpeed(2);
 }
 
 void MainWindow::changePower(){
@@ -169,8 +169,8 @@ void MainWindow::increaseTargetTemp()
     {
         if(targetTemp<25)
         {
-            targetTemp++;
-            ui->targetTemp->setText(QString::number(targetTemp));
+            //targetTemp++;
+            //ui->targetTemp->setText(QString::number(targetTemp));
 			w.increaseTargetTemp();
         }
     }
@@ -178,8 +178,8 @@ void MainWindow::increaseTargetTemp()
     {
         if(targetTemp<30)
         {
-            targetTemp++;
-            ui->targetTemp->setText(QString::number(targetTemp));
+            //targetTemp++;
+            //ui->targetTemp->setText(QString::number(targetTemp));
 			w.increaseTargetTemp();
         }
     }
@@ -190,8 +190,8 @@ void MainWindow::decreaseTargetTemp()
     {
         if(targetTemp>18)
         {
-            targetTemp--;
-            ui->targetTemp->setText(QString::number(targetTemp));
+            //targetTemp--;
+            //ui->targetTemp->setText(QString::number(targetTemp));
 			w.decreaseTargetTemp();
         }
     }
@@ -199,8 +199,8 @@ void MainWindow::decreaseTargetTemp()
     {
         if(targetTemp>25)
         {
-            targetTemp--;
-            ui->targetTemp->setText(QString::number(targetTemp));
+            //targetTemp--;
+            //ui->targetTemp->setText(QString::number(targetTemp));
 			w.decreaseTargetTemp();
         }
     }
@@ -236,19 +236,21 @@ void MainWindow::changeMode(int inMode)
 }
 
 void MainWindow::do_Sub()
-{
+{	
 	if (w.get_working_state() == 1) {
 		w.Start();
 		changeCurrentTempShow(w.get_current_temp());
 		updatefees(w.get_fee());
 		changeMode(w.get_main_working_mode());
 		targetTemp = w.get_target_temp();
-		if (w.get_last_wind() != NULL && w.get_current_wind() == NULL) {
+		ui->targetTemp->setText(QString::number(targetTemp));
+		changeWindSpeed(w.get_current_wind());
+		/*if (w.get_last_wind() != NULL && w.get_current_wind() == NULL) {
 			changeWindSpeed(-1);
 		}
 		if (windSpeed == -1 && w.get_last_wind() == w.get_current_wind() && w.get_current_wind() != NULL) {
 			changeWindSpeed(w.get_current_wind());
-		}
+		}*/
 		if (w.islinked() == -1 && flag == 0) {
 			QMessageBox::warning(this, "连接断开", "正在尝试重连");
 			flag = 1;

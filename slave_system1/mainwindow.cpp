@@ -10,7 +10,8 @@ MainWindow::MainWindow(QWidget *parent)
 	ui->setupUi(this);
 	isOpen = false;
 	currentTemp = 25;
-	w.set_lastwind = 1;
+	w.initial_temp(currentTemp);
+	w.set_lastwind(1);
 	flag = 0;
 
 	QTimer *timer = new QTimer(this);
@@ -232,10 +233,11 @@ void MainWindow::do_Sub()
 		changeCurrentTempShow(w.get_current_temp());
 		updatefees(w.get_fee());
 		changeMode(w.get_main_working_mode());
-		if (w.get_last_wind != NULL && w.get_current_wind == NULL) {
+		targetTemp = w.get_target_temp();
+		if (w.get_last_wind() != NULL && w.get_current_wind() == NULL) {
 			changeWindSpeed(-1);
 		}
-		if (windSpeed == -1 && w.get_last_wind == w.get_current_wind && w.get_current_wind != NULL) {
+		if (windSpeed == -1 && w.get_last_wind() == w.get_current_wind() && w.get_current_wind() != NULL) {
 			changeWindSpeed(w.get_current_wind());
 		}
 		if (w.islinked() == -1 && flag == 0) {

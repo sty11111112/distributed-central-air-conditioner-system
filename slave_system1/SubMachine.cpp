@@ -2,7 +2,7 @@
 
 struct SubMachine::recv_String {
 	int ansid;
-	int recv_request;   //接收的请求类型 -1：心跳包；1：开机请求；2：主机温度请求；3：温度请求；4：风速请求；5：从机费用信息
+	int recv_request;   //接收的请求类型；1：开机请求；2：心跳包；3：温度请求；4：风速请求；
 	int room_id;
 	float recv_curTemp;
 	int recv_temp;
@@ -72,8 +72,11 @@ void SubMachine::set_current_temp(int temp)
 }
 void SubMachine::set_current_wind(int temp)
 {
-	current_wind = temp;
+	if (current_wind == NULL) {
+		last_wind = temp;
+	}
 	if (current_wind != NULL){
+		current_wind = temp;
 		last_wind = current_wind;
 	}
 }
@@ -99,7 +102,7 @@ int SubMachine::get_target_temp()
 {
 	return target_temp;
 }
-float SubMachine::get_current_temp()
+int SubMachine::get_current_temp()
 {
 	return current_temp;
 }
@@ -113,7 +116,7 @@ int SubMachine::get_last_wind()
 	return last_wind;
 }
 
-float SubMachine::get_fee()
+double SubMachine::get_fee()
 {
 	return fee;
 }
@@ -154,7 +157,7 @@ int SubMachine::CloseMachine() {
 	ans.len = sizeof(send_buffer);
 	ans.time = z;
 	ans.count = 0;
-	time_table.insert(pair<unsigned long, out_time>(Ans_id, ans));
+	time_table.insert(pair<int, out_time>(Ans_id, ans));
 
 	return 1;
 }
@@ -166,7 +169,6 @@ int SubMachine::OpenMachine() {
 	}
 	islink = 1;
 	set_working_state(ON);
-	set_current_temp(25);
 	main_working_mode = COOL;
 	b = clock();
 	h = clock();
@@ -186,7 +188,7 @@ int SubMachine::OpenMachine() {
 	ans.len = sizeof(send_buffer);
 	ans.time = z;
 	ans.count = 0;
-	time_table.insert(pair<unsigned long, out_time>(Ans_id, ans));
+	time_table.insert(pair<int, out_time>(Ans_id, ans));
 	return 1;
 }
 
@@ -202,10 +204,13 @@ int SubMachine::decreaseTargetTemp() {
 	f = clock();
 	return 1;
 }
-
 //设置初始风速，以便向主控机发送风速请求
 void SubMachine::set_lastwind(int newspeed) {
 	last_wind = newspeed;
+}
+//设置初始房间温度
+void SubMachine::initial_temp(int temp) {
+	current_temp = temp;
 }
 
 //发送风速请求
@@ -226,7 +231,7 @@ void SubMachine::changeWindSpeed(int newspeed) {
 	ans.len = sizeof(send_buffer);
 	ans.time = z;
 	ans.count = 0;
-	time_table.insert(pair<unsigned long, out_time>(Ans_id, ans));
+	time_table.insert(pair<int, out_time>(Ans_id, ans));
 }
 
 void SubMachine::Start()
@@ -331,7 +336,7 @@ void SubMachine::Start()
 			ans.len = sizeof(send_buffer);
 			ans.time = z;
 			ans.count = 0;
-			time_table.insert(pair<unsigned long, out_time>(Ans_id, ans));
+			time_table.insert(pair<int, out_time>(Ans_id, ans));
 		}
 	}
 
@@ -353,15 +358,16 @@ void SubMachine::Start()
 			ans.len = sizeof(send_buffer);
 			ans.time = z;
 			ans.count = 0;
-			time_table.insert(pair<unsigned long, out_time>(Ans_id, ans));
+			time_table.insert(pair<int, out_time>(Ans_id, ans));
 		}
 	}
 
-	//发送心跳包
-	if (working_state == ON && z - h >= 5000) {
+	//发送心跳包，携带房间温度
+	if (working_state == ON && z - h >= 10000) {
 		struct recv_String req;
 		req.room_id = room_num;
-		req.recv_mode = -1;
+		req.recv_mode = 2;
+		req.recv_curTemp = current_temp;
 		Ans_id++;
 		req.ansid = Ans_id;
 		memset(send_buffer, 0, 512);
@@ -373,7 +379,7 @@ void SubMachine::Start()
 		ans.len = sizeof(send_buffer);
 		ans.time = z;
 		ans.count = 0;
-		time_table.insert(pair<unsigned long, out_time>(Ans_id, ans));
+		time_table.insert(pair<int, out_time>(Ans_id, ans));
 	}
 
 	//温度请求
@@ -393,7 +399,7 @@ void SubMachine::Start()
 		ans.len = sizeof(send_buffer);
 		ans.time = z;
 		ans.count = 0;
-		time_table.insert(pair<unsigned long, out_time>(Ans_id, ans));
+		time_table.insert(pair<int, out_time>(Ans_id, ans));
 	}
 
 	//接受中央空调的信息
@@ -410,17 +416,7 @@ void SubMachine::Start()
 			struct recv_String res;
 			memset(&res, 0, sizeof(res));
 			memcpy(&res, recv_buffer, sizeof(res));
-
-			if (res.recv_request == -1) {
-				if (res.room_id == room_num) {
-					if (time_table.find(res.ansid) == time_table.end()) {
-
-					}
-					else {
-						time_table.erase(res.ansid);
-					}
-				}
-			}
+			//关机响应
 			if (res.recv_request == 0) {
 				if (res.room_id == room_num) {
 					closesocket(sockfd);
@@ -429,6 +425,7 @@ void SubMachine::Start()
 					time_table.clear();
 				}
 			}
+			//开机响应和主控机对从控机的控制
 			if (res.recv_request == 1) {
 				if (res.room_id == room_num) {
 					set_target_temp(res.recv_temp);
@@ -441,21 +438,16 @@ void SubMachine::Start()
 					}
 				}
 			}
-			//查询温度请求
+			//心跳包返回，携带费用信息
 			if (res.recv_request == 2) {
 				if (res.room_id == room_num) {
-					res.recv_curTemp = current_temp;
-					Ans_id = Ans_id + 1;
-					res.ansid = Ans_id;
-					memset(send_buffer, 0, 512);
-					memcpy(send_buffer, &res, sizeof(res));
-					sendToServer(send_buffer, sizeof(send_buffer));
-					out_time ans;
-					ans.buf = send_buffer;
-					ans.len = sizeof(send_buffer);
-					ans.time = z;
-					ans.count = 0;
-					time_table.insert(pair<unsigned long, out_time>(Ans_id, ans));
+					set_fee(res.recv_fee);
+					if (time_table.find(res.ansid) == time_table.end()) {
+
+					}
+					else {
+						time_table.erase(res.ansid);
+					}
 				}
 			}
 			//温度设置响应
@@ -476,18 +468,6 @@ void SubMachine::Start()
 					if(res.recv_wind != current_wind)
 						b = clock();
 					set_current_wind(res.recv_wind);
-					if (time_table.find(res.ansid) == time_table.end()) {
-
-					}
-					else {
-						time_table.erase(res.ansid);
-					}
-				}
-			}
-			//用量及费用
-			if (res.recv_request == 5) {
-				if (res.room_id == room_num) {
-					set_fee(res.recv_fee);
 					if (time_table.find(res.ansid) == time_table.end()) {
 
 					}

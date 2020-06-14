@@ -35,10 +35,10 @@ public:
 	~SubMachine();
 	int get_room_num();
 	int get_target_temp();
-	float get_current_temp();
+	int get_current_temp();
 	int get_current_wind();
 	int get_last_wind();
-	float get_fee();
+	double get_fee();
 	int get_working_state();
 	int get_main_working_mode();
 	void set_RoomID(int id);
@@ -50,6 +50,7 @@ public:
 	void changeWindSpeed(int newspeed);
 	void Start();
 	int islinked();
+	void initial_temp(int temp);
 
 private:
 	SOCKET sockfd;

@@ -39,15 +39,24 @@ void MainWindow::changeWindSpeed(int newWindSpeed)
 		break;
     case 0:
         wind="低风";
-		w.changeWindSpeed(0);
+		if (w.get_current_wind == NULL)
+			w.set_lastwind(0);
+		else
+			w.changeWindSpeed(0);
         break;
     case 1:
         wind="中风";
-		w.changeWindSpeed(1);
+		if (w.get_current_wind == NULL)
+			w.set_lastwind(1);
+		else
+			w.changeWindSpeed(1);
         break;
     case 2:
         wind="高风";
-		w.changeWindSpeed(2);
+		if (w.get_current_wind == NULL)
+			w.set_lastwind(2);
+		else
+			w.changeWindSpeed(2);
         break;
     default:
         QMessageBox::warning(0,"错误","风速设置出错",QMessageBox::Ok);

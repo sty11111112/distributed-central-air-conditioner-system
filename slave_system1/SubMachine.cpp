@@ -31,8 +31,8 @@ int SubMachine::init_socket()
 	sockfd = socket(AF_INET, SOCK_DGRAM, 0);
 
 	ser_addr.sin_family = AF_INET;
-	ser_addr.sin_port = htons(53);
-	ser_addr.sin_addr.s_addr = INADDR_ANY;
+	ser_addr.sin_port = htons(5555);
+	ser_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
 	if (connect(sockfd, (SOCKADDR *)&ser_addr, sizeof(SOCKADDR)) == SOCKET_ERROR) {
 		return -1;
@@ -72,11 +72,9 @@ void SubMachine::set_current_temp(int temp)
 }
 void SubMachine::set_current_wind(int temp)
 {
-	if (current_wind == NULL) {
-		last_wind = temp;
-	}
+	current_wind = temp;
 	if (current_wind != NULL){
-		current_wind = temp;
+		
 		last_wind = current_wind;
 	}
 }
@@ -383,7 +381,7 @@ void SubMachine::Start()
 	}
 
 	//ÎÂ¶ÈÇëÇó
-	if (working_state == ON && z - f >= 1000) {	
+	if (working_state == ON && z - f >= 1000 && flag != 0) {	
 		struct recv_String req;
 		req.room_id = room_num;
 		Ans_id++;
